@@ -26,17 +26,27 @@ def load_data_to_redshift():
         aws_connection=metastoreBackend.get_connection("aws_credentials")
         logging.info(vars(aws_connection))
 # TODO: create the redshift_hook variable by calling PostgresHook()
-#       redshift_hook.run(sql_statements.COPY_ALL_TRIPS_SQL.format(aws_connection.login, aws_connection.password))
+        redshift_hook = PostgresHook("redshift")
+        redshift_hook.run(sql_statements.COPY_ALL_TRIPS_SQL.format(aws_connection.login, aws_connection.password))
 
 # TODO: create the create_table_task by calling PostgresOperator()
-
+    create_table_task=PostgresOperator(
+       task_id="create_table",
+        postgres_conn_id="redshift",
+        sql=sql_statements.CREATE_TRIPS_TABLE_SQL
+    )
 
 # TODO: create the location_traffic_task by calling PostgresOperator()
+    location_traffic_task = PostgresOperator(
+        task_id="calculate_location_traffic",
+        postgres_conn_id="redshift",
+        sql=sql_statements.LOCATION_TRAFFIC_SQL
+    )
 
     load_data = load_task()
 
 # TODO: uncomment the dependency flow for these new tasks    
-   # create_table_task >> load_data
-   # load_data >> location_traffic_task
+    create_table_task >> load_data
+    load_data >> location_traffic_task
 
 s3_to_redshift_dag = load_data_to_redshift()
