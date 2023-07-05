@@ -65,9 +65,10 @@ def data_lineage():
         sql=sql_statements.LOCATION_TRAFFIC_SQL,
     )
 
-    create_trips_table >> load_trip_data_to_redshift_task
+    create_trips_table >> load_trip_data_to_redshift_task >> calculate_traffic_task
 # TODO: First, load the Airflow UI and run this DAG once.
 # TODO: Next, add the calculate_traffic_task to the end of the flow and run it again
+    create_stations_table >> load_station_data_to_redshift_task >> calculate_traffic_task
 # TODO: Finally, configure the task ordering for the stations table to be created before 
 #       loading station data. Keep in mind these two tasks can run independently of 
 #       the others.

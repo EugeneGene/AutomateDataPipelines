@@ -9,6 +9,7 @@ from airflow.operators.postgres_operator import PostgresOperator
 from udacity.common import sql_statements
 
 @dag(
+    schedule_interval='@hourly',
     start_date=pendulum.now()
 )
 def data_lineage():
