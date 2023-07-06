@@ -31,7 +31,7 @@ def data_partitioning():
         redshift_hook = PostgresHook("redshift")
         # # #
         # TODO: How do we get the execution_date from our context?
-        # execution_date=kwargs["<REPLACE>"]
+        execution_date = kwargs["execution_date"]
         execution_date = pendulum.now()
         # # #
 
@@ -42,6 +42,8 @@ def data_partitioning():
         sql_stmt = sql_statements.COPY_ALL_TRIPS_SQL.format(
             aws_connection.login,
             aws_connection.password,
+            year=execution_date.year,
+            month=execution_date.month
         )
         redshift_hook.run(sql_stmt)
 

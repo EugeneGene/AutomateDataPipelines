@@ -25,7 +25,7 @@ from udacity.common import sql_statements
 def data_quality():
 
 # Add the task SLA as a parameter in the @task annotation
-    @task()
+    @task(sla=datetime.timedelta(hours=1))
     def load_trip_data_to_redshift(*args, **kwargs):
         metastoreBackend = MetastoreBackend()
         aws_connection=metastoreBackend.get_connection("aws_credentials")
@@ -96,5 +96,7 @@ def data_quality():
 #
 # TODO: Set the task dependencies for the stations and trips check tasks
 #
+    load_stations_task >> check_stations_task
+    load_trips_task >> check_trips_task
 
 data_quality_dag = data_quality()
