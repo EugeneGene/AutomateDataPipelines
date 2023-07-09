@@ -41,10 +41,17 @@ class FactsCalculatorOperator(BaseOperator):
         #
         # TODO: Fetch the redshift hook
         #
-        redshift_hook = PostgresHook(self.redshift_conn_id)
+        redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
         #
-        # TODO: Format the `facts_sql_template` and run the query against redshift
+        # TODO:[x] Format the `facts_sql_template` and run the query against redshift
         #
+        facts_sql = FactsCalculatorOperator.facts_sql_template.format(
+            origin_table=self.origin_table,
+            destination_table=self.destination_table,
+            fact_column=self.fact_column,
+            groupby_column=self.groupby_column
+        )
+        redshift.run(facts_sql)
         #redshift_hook.get_records(f"SELECT COUNT(*) FROM {self.table}")
         
 
