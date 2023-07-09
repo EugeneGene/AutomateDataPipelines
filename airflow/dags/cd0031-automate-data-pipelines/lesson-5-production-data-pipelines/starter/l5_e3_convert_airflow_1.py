@@ -7,6 +7,7 @@ import datetime
 import logging
 
 from airflow import DAG
+from airflow.decorators import dag,task
 from airflow.secrets.metastore import MetastoreBackend
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.operators.postgres_operator import PostgresOperator
@@ -14,16 +15,23 @@ from airflow.operators.python_operator import PythonOperator
 
 from udacity.common import sql_statements
 
-# TODO: use the @dag decorator and a dag function declaration 
-dag = DAG(
-    'data_quality_legacy',
+# TODO[x]: use the @dag decorator and a dag function declaration 
+# dag = DAG(
+#     'data_quality_legacy',
+#     start_date=pendulum.datetime(2018, 1, 1, 0, 0, 0, 0),
+#     end_date=pendulum.datetime(2018, 12, 1, 0, 0, 0, 0),
+#     schedule_interval='@monthly',
+#     max_active_runs=1
+# )
+
+@dag(
     start_date=pendulum.datetime(2018, 1, 1, 0, 0, 0, 0),
     end_date=pendulum.datetime(2018, 12, 1, 0, 0, 0, 0),
     schedule_interval='@monthly',
-    max_active_runs=1
+    max_active_runs=1    
 )
 
-def data quality():
+def data_quality():
     # TODO [x]: use the @task decorator here
     @task(sla=datetime.timedelta(hours=1))
     def load_trip_data_to_redshift(*args, **kwargs):
@@ -130,7 +138,7 @@ def data quality():
 
     create_trips_table >> load_trips_task
     create_stations_table >> load_stations_task
-    load_stations_task >> check_stations
-    load_trips_task >> check_trips
+    load_stations_task >> check_stations_task
+    load_trips_task >> check_trips_task
 
 data_quality_dag = data_quality()
