@@ -89,9 +89,9 @@ class SqlQueries:
                 events.location, 
                 events.useragent
                 FROM (SELECT TIMESTAMP 'epoch' + ts/1000 * interval '1 second' AS start_time, *
-            FROM staging_events
+            FROM log_data
             WHERE page='NextSong') events
-            LEFT JOIN staging_songs songs
+            LEFT JOIN song_data songs
             ON events.song = songs.title
                 AND events.artist = songs.artist_name
                 AND events.length = songs.duration
@@ -99,13 +99,13 @@ class SqlQueries:
 
     user_table_insert = ("""
         SELECT distinct userid, firstname, lastname, gender, level
-        FROM staging_events
+        FROM song_data
         WHERE page='NextSong'
     """)
 
     song_table_insert = ("""
         SELECT distinct song_id, title, artist_id, year, duration
-        FROM staging_songs
+        FROM song_data
     """)
 
     artist_table_insert = ("""
