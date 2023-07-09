@@ -25,5 +25,6 @@ class HasRowsOperator(BaseOperator):
         num_records = records[0][0]
         if num_records < 1:
             raise ValueError(f"Data quality check failed. {self.table} contained 0 rows")
+        logging.info(f"From workspace/airflow/plugins/custom_operators directory")
         logging.info(f"Data quality on table {self.table} check passed with {records[0][0]} records")
 

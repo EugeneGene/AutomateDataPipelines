@@ -16,7 +16,10 @@ from custom_operators.s3_to_redshift import S3ToRedshiftOperator
 from custom_operators.has_rows import HasRowsOperator
 
 
+
 from udacity.common import sql_statements
+
+from airflow.models import Variable #REBEdit
 
 @dag(    
     start_date=pendulum.now(),
@@ -50,18 +53,23 @@ def demonstrate_custom_operators():
         table="trips",
         redshift_conn_id="redshift",
         aws_credentials_id="aws_credentials",
-        s3_bucket="sean-murdock",
+        s3_bucket="udacity-dend",
         s3_key="data-pipelines/divvy/unpartitioned/divvy_trips_2018.csv"
     )
 
     #
     # TODO: Replace this data quality check with the HasRowsOperator
     #
-    check_trips_task = check_greater_than_zero(
-        params={
-            'table':'trips'
-        }
-    )
+    # check_trips_task = check_greater_than_zero(
+    #     params={
+    #         'table':'trips'
+    #     }
+    # )
+    check_trips_task = HasRowsOperator(
+        task_id="count_trips",
+        table="trips",
+        redshift_conn_id="redshift",
+    )   
 
 
 
@@ -75,7 +83,7 @@ def demonstrate_custom_operators():
         task_id="load_stations_from_s3_to_redshift",
         redshift_conn_id="redshift",
         aws_credentials_id="aws_credentials",
-        s3_bucket="sean-murdock",
+        s3_bucket = Variable.get('s3_bucket'), # s3_bucket="udacity-dend",
         s3_key="data-pipelines/divvy/unpartitioned/divvy_stations_2017.csv",
         table="stations"
     )
@@ -83,11 +91,17 @@ def demonstrate_custom_operators():
 #
 # TODO: Replace this data quality check with the HasRowsOperator
 #
-    check_stations_task = check_greater_than_zero(
-        params={
-            'table': 'stations',
-        }
+    # check_stations_task = check_greater_than_zero(
+    #     params={
+    #         'table': 'stations',
+    #     }
+    # )
+    check_stations_task = HasRowsOperator(
+        task_id="count_stations",
+        table="stations",
+        redshift_conn_id="redshift",        
     )
+
 
     create_trips_table >> copy_trips_task
     create_stations_table >> copy_stations_task
