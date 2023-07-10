@@ -90,21 +90,7 @@ def final_project():
         json_format = "auto"
     )
 
-    # load_songplays_table = LoadFactOperator(
-    #     task_id='Load_songplays_fact_table',
-    #     redshift_conn_id="redshift",
-    #     staging_songs_table="song_data",
-    #     staging_events_table="log_data",
-    #     destination_table="factSongPlays",
-    #     staging_songs_column_1="artist_id",
-    #     staging_events_column_1="sessionId",
-    #     staging_events_column_2="userId",
-    #     staging_events_column_3="ts",
-    #     staging_events_column_4="level",
-    #     staging_events_column_5="location",
-    #     staging_events_column_6="userAgent",
-    #     user_dimension_table_column='user_key'
-    # )
+
     load_songplays_table = LoadFactOperator(
         task_id='Load_songplays_fact_table',
         redshift_conn_id="redshift",
@@ -140,6 +126,12 @@ def final_project():
 
     run_quality_checks = DataQualityOperator(
         task_id='Run_data_quality_checks',
+        params={
+            'tables': ["log_data", "song_data",
+                        "factSongPlays", 
+                        "dimArtists", "dimTime", "dimUsers", "dimSongs"]
+        }
+
     )
 
     start_operator >> create_staging_events_table
