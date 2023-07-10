@@ -10,7 +10,6 @@ class DataQualityOperator(BaseOperator):
     def __init__(self,
                  redshift_conn_id="",
                  *args, **kwargs):
-        r
 
         super(DataQualityOperator, self).__init__(*args, **kwargs)
         # Map params here
@@ -20,7 +19,7 @@ class DataQualityOperator(BaseOperator):
 
     def execute(self, context):
         redshift = PostgresHook(postgres_conn_id = self.redshift_conn_id)
-        tables = kwargs["params"]["tables"]
+        tables = self.params.get("tables", [])
         for table in tables:
             records = redshift.get_records(f"SELECT COUNT(*) FROM {table}")
             if len(records) < 1 or len(records[0]) < 1:
@@ -28,5 +27,5 @@ class DataQualityOperator(BaseOperator):
             num_records = records[0][0]
             if num_records < 1:
                 raise ValueError(f"Data quality check failed. {table} contained 0 rows")
-            logging.info(f"Data quality on table {table} check passed with {records[0][0]} records")     
+            self.log.info(f"Data quality on table {table} check passed with {records[0][0]} records")     
         

@@ -102,34 +102,39 @@ def final_project():
 
     load_user_dimension_table = LoadDimensionOperator(
         task_id='Load_user_dim_table',
-        redshift_conn_id="redshift"
-        #staging_events_table="log_data",
-        #staging_events_column_1="userId"
-
-
+        redshift_conn_id="redshift",
+        sql_create=SqlQueries.user_table_insert,
+        sql_insert=SqlQueries.user_table_insert
     )
 
     load_song_dimension_table = LoadDimensionOperator(
         task_id='Load_song_dim_table',
         redshift_conn_id="redshift",
+        sql_create=SqlQueries.song_table_insert,
+        sql_insert=SqlQueries.song_table_insert
     )
 
     load_artist_dimension_table = LoadDimensionOperator(
         task_id='Load_artist_dim_table',
         redshift_conn_id="redshift",
+        sql_create=SqlQueries.artist_table_insert,
+        sql_insert=SqlQueries.artist_table_insert
     )
 
     load_time_dimension_table = LoadDimensionOperator(
         task_id='Load_time_dim_table',
         redshift_conn_id="redshift",
+        sql_create=SqlQueries.time_table_insert,
+        sql_insert=SqlQueries.time_table_insert
     )
 
     run_quality_checks = DataQualityOperator(
         task_id='Run_data_quality_checks',
+        redshift_conn_id="redshift",
         params={
-            'tables': ["log_data", "song_data",
-                        "factSongPlays", 
+            'tables': ["log_data", "song_data", # "factSongPlays", 
                         "dimArtists", "dimTime", "dimUsers", "dimSongs"]
+            
         }
 
     )

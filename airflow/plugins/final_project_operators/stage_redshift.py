@@ -76,6 +76,10 @@ class StageToRedshiftOperator(BaseOperator):
         credentials = aws_hook.get_credentials()
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
 
+
+
+        #redshift.run("DROP TABLE IF EXISTS {}".format(self.table))
+        
         self.log.info("Create staging {}.".format(self.table))
 
         self.log.info("Clearing staging {} from destination Redshift table".format(self.table))

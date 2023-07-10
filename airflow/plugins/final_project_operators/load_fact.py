@@ -11,6 +11,7 @@ class LoadFactOperator(BaseOperator):
                  redshift_conn_id="",
                  sql="",
                  *args, **kwargs):
+                 
 
         super(LoadFactOperator, self).__init__(*args, **kwargs)
         # Map params 
@@ -18,6 +19,19 @@ class LoadFactOperator(BaseOperator):
         self.sql=sql
 
     def execute(self, context):
-        self.log.info('LoadFactOperator not implemented yet')
-        redshift = PostgresHook(postgres_conn_id = self.redshift_conn_id)
+        redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
+        self.log.info('DELETE table')
+        redshift.run("DROP TABLE IF EXISTS factSongPlays")
+        redshift.run("""
+                CREATE TABLE IF NOT EXISTS factSongPlays (
+                    songplay_id  VARCHAR,
+                    start_time   BIGINT NOT NULL REFERENCES dimTime(start_time),
+                    user_id      BIGINT,
+                    level        VARCHAR NOT NULL,
+                    song_id      VARCHAR NOT NULL REFERENCES dimSongs(song_id),
+                    artist_id    VARCHAR NOT NULL REFERENCES dimArtists(artist_id),
+                    session_id   INT NOT NULL,
+                    location     VARCHAR,
+                    user_agent   TEXT NOT NULL);""")
+        self.log.info('Copy Data')
         redshift.run(self.sql)
