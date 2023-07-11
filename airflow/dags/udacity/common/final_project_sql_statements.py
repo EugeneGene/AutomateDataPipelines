@@ -102,52 +102,52 @@ class SqlQueries:
     #             AND events.length = songs.duration
     # """)
 
-    songplay_table_insert = ("""
-        INSERT INTO factSongPlays (
-            start_time,
-            user_id,
-            level,
-            song_id,
-            artist_id,
-            session_id,
-            location,
-            user_agent
-        )
-        SELECT
-            CAST(events.userid AS BIGINT) AS user_id,
-            CAST(events.ts AS BIGINT) as start_time,
-            events.level,
-            songs.song_id,
-            songs.artist_id,
-            events.sessionid,
-            events.location,
-            events.useragent
-        FROM log_data events
-        LEFT JOIN song_data songs
-        ON events.song = songs.title
-            AND events.artist = songs.artist_name
-            AND events.length = songs.duration
-        WHERE events.page = 'NextSong'
-    """)
-
     # songplay_table_insert = ("""
-    #     INSERT INTO factSongPlays (song_id, artist_id,
-    #                                 session_id,user_id, start_time,
-    #                                 level, location, user_agent, user_key)
-    #     SELECT sd.song_id AS song_id,
-    #             sd.artist_id AS artist_id,
-    #             ld.sessionId AS session_id,
-    #             ld.userId AS user_id,
-    #             ld.ts AS start_time,
-    #             ld.level AS level,
-    #             ld.location AS location,
-    #             ld.userAgent AS user_agent,
-    #             du.user_key AS user_key
-    #     FROM log_data ld
-    #     JOIN song_data sd ON
-    #     LOWER(REGEXP_REPLACE(ld.song, '[^a-zA-Z0-9]', '')) = LOWER(REGEXP_REPLACE(sd.title, '[^a-zA-Z0-9]', ''))
-    #     AND LOWER(REGEXP_REPLACE(ld.artist, '[^a-zA-Z0-9]', '')) = LOWER(REGEXP_REPLACE(sd.artist_name, '[^a-zA-Z0-9]', ''))
-    #     JOIN dimUsers du ON ld.userId = du.user_id;""")
+    #     INSERT INTO factSongPlays (
+    #         start_time,
+    #         user_id,
+    #         level,
+    #         song_id,
+    #         artist_id,
+    #         session_id,
+    #         location,
+    #         user_agent
+    #     )
+    #     SELECT
+    #         CAST(events.userid AS BIGINT) AS user_id,
+    #         CAST(events.ts AS BIGINT) as start_time,
+    #         events.level,
+    #         songs.song_id,
+    #         songs.artist_id,
+    #         events.sessionid,
+    #         events.location,
+    #         events.useragent
+    #     FROM log_data events
+    #     LEFT JOIN song_data songs
+    #     ON events.song = songs.title
+    #         AND events.artist = songs.artist_name
+    #         AND events.length = songs.duration
+    #     WHERE events.page = 'NextSong'
+    # """)
+
+    songplay_table_insert = ("""
+        INSERT INTO factSongPlays (song_id, artist_id,
+                                    session_id,user_id, start_time,
+                                    level, location, user_agent, user_key)
+        SELECT sd.song_id AS song_id,
+                sd.artist_id AS artist_id,
+                ld.sessionId AS session_id,
+                ld.userId AS user_id,
+                ld.ts AS start_time,
+                ld.level AS level,
+                ld.location AS location,
+                ld.userAgent AS user_agent,
+                du.user_key AS user_key
+        FROM log_data ld
+        JOIN song_data sd ON
+        LOWER(REGEXP_REPLACE(ld.song, '[^a-zA-Z0-9]', '')) = LOWER(REGEXP_REPLACE(sd.title, '[^a-zA-Z0-9]', ''))
+        AND LOWER(REGEXP_REPLACE(ld.artist, '[^a-zA-Z0-9]', '')) = LOWER(REGEXP_REPLACE(sd.artist_name, '[^a-zA-Z0-9]', ''))
+        JOIN dimUsers du ON ld.userId = du.user_id;""")
 
     user_table_insert = ("""
         INSERT INTO dimUsers (user_id, first_name, last_name, gender, level)
