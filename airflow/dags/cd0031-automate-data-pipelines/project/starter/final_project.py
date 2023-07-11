@@ -30,41 +30,6 @@ def final_project():
     start_operator = DummyOperator(task_id='Begin_execution')
     end_operator = DummyOperator(task_id='End_execution')
 
-    create_staging_events_table = PostgresOperator(
-        task_id="create_staging_events_table",
-        postgres_conn_id="redshift",
-        sql=SqlQueries.staging_events_table_create
-    ) 
-    create_staging_songs_table = PostgresOperator(
-        task_id="create_staging_songs_table",
-        postgres_conn_id="redshift",
-        sql=SqlQueries.staging_songs_table_create
-    )
-    create_songplay_table = PostgresOperator(
-        task_id="create_songplay_table",
-        postgres_conn_id="redshift",
-        sql=SqlQueries.songplay_table_create
-    )
-    create_user_table = PostgresOperator(
-        task_id="create_user_table",
-        postgres_conn_id="redshift",
-        sql=SqlQueries.user_table_create
-    )
-    create_song_table = PostgresOperator(
-        task_id="create_song_table",
-        postgres_conn_id="redshift",
-        sql=SqlQueries.song_table_create
-    )
-    create_artist_table = PostgresOperator(
-        task_id="create_artist_table",
-        postgres_conn_id="redshift",
-        sql=SqlQueries.artist_table_create
-    )
-    create_time_table = PostgresOperator(
-        task_id="create_time_table",
-        postgres_conn_id="redshift",
-        sql=SqlQueries.time_table_create
-    ) 
 
     stage_events_to_redshift = StageToRedshiftOperator(
         task_id='Stage_events',
@@ -75,7 +40,8 @@ def final_project():
         s3_bucket="udacity-dend",
         s3_key="log_data",
         s3_location="s3://udacity-dend/log_data",
-        json_format="s3://udacity-dend/log_json_path.json"
+        json_format="s3://udacity-dend/log_json_path.json",
+        sql_create=SqlQueries.staging_events_table_create
     )
 
     stage_songs_to_redshift = StageToRedshiftOperator(
@@ -87,44 +53,62 @@ def final_project():
         s3_bucket="udacity-dend",
         s3_key="song_data/A/A",
         s3_location="s3://udacity-dend/song_data/A/A",
-        json_format = "auto"
+        json_format = "auto",
+        sql_create=SqlQueries.staging_songs_table_create
     )
 
 
     load_songplays_table = LoadFactOperator(
         task_id='Load_songplays_fact_table',
         redshift_conn_id="redshift",
-        sql=SqlQueries.songplay_table_insert
+        params={
+            'table': "factSongPlays"
+        },
+        sql_create=SqlQueries.songplay_table_create,
+        sql_insert=SqlQueries.songplay_table_insert
     )
-
-
-
 
     load_user_dimension_table = LoadDimensionOperator(
         task_id='Load_user_dim_table',
         redshift_conn_id="redshift",
-        sql_create=SqlQueries.user_table_insert,
+        params={
+            'table': "dimUsers"
+        },
+        sql_delete=SqlQueries.user_table_delete,
+        sql_create=SqlQueries.user_table_create,
         sql_insert=SqlQueries.user_table_insert
     )
 
     load_song_dimension_table = LoadDimensionOperator(
         task_id='Load_song_dim_table',
         redshift_conn_id="redshift",
-        sql_create=SqlQueries.song_table_insert,
+        params={
+            'table': "dimSongs"
+        },
+        sql_delete=SqlQueries.song_table_delete,
+        sql_create=SqlQueries.song_table_create,
         sql_insert=SqlQueries.song_table_insert
     )
 
     load_artist_dimension_table = LoadDimensionOperator(
         task_id='Load_artist_dim_table',
         redshift_conn_id="redshift",
-        sql_create=SqlQueries.artist_table_insert,
+        params={
+            'table': "dimArtists"
+        },
+        sql_delete=SqlQueries.artist_table_delete,
+        sql_create=SqlQueries.artist_table_create,
         sql_insert=SqlQueries.artist_table_insert
     )
 
     load_time_dimension_table = LoadDimensionOperator(
         task_id='Load_time_dim_table',
         redshift_conn_id="redshift",
-        sql_create=SqlQueries.time_table_insert,
+        params={
+            'table': "dimTime"
+        },
+        sql_delete=SqlQueries.time_table_delete,
+        sql_create=SqlQueries.time_table_create,
         sql_insert=SqlQueries.time_table_insert
     )
 
@@ -132,37 +116,27 @@ def final_project():
         task_id='Run_data_quality_checks',
         redshift_conn_id="redshift",
         params={
-            'tables': ["log_data", "song_data", # "factSongPlays", 
+            'tables': ["log_data", "song_data",  "factSongPlays", 
                         "dimArtists", "dimTime", "dimUsers", "dimSongs"]
             
         }
 
     )
 
-    start_operator >> create_staging_events_table
-    start_operator >> create_staging_songs_table
 
-    create_staging_events_table >> stage_events_to_redshift
+    start_operator >> stage_events_to_redshift
 
-    create_staging_songs_table >> stage_songs_to_redshift
+    start_operator >> stage_songs_to_redshift
 
-    stage_events_to_redshift >> create_songplay_table
-    stage_songs_to_redshift >> create_songplay_table
+    stage_events_to_redshift >> load_songplays_table
+    stage_songs_to_redshift >> load_songplays_table
 
-    create_songplay_table >> load_songplays_table
+    
 
-    load_songplays_table >> create_song_table
-    load_songplays_table >> create_user_table
-    load_songplays_table >> create_artist_table
-    load_songplays_table >> create_time_table
-
-
-    create_song_table >> load_song_dimension_table
-    create_user_table >> load_user_dimension_table
-    create_artist_table >> load_artist_dimension_table
-    create_time_table >> load_time_dimension_table
-
-
+    load_songplays_table >> load_song_dimension_table
+    load_songplays_table >> load_user_dimension_table
+    load_songplays_table >> load_artist_dimension_table
+    load_songplays_table >> load_time_dimension_table
 
 
     load_song_dimension_table >> run_quality_checks

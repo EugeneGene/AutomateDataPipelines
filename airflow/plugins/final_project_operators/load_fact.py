@@ -9,30 +9,28 @@ class LoadFactOperator(BaseOperator):
     @apply_defaults
     def __init__(self,
                  redshift_conn_id="",
-                 sql="",
+                 sql_create="",
+                 sql_insert="",
                  *args, **kwargs):
                  
 
         super(LoadFactOperator, self).__init__(*args, **kwargs)
         # Map params 
         self.redshift_conn_id = redshift_conn_id
-        self.sql=sql
+        self.sql_create=sql_create
+        self.sql_insert=sql_insert
 
     def execute(self, context):
+        # table == factSongPlays
+        table = self.params.get("table")
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
-        self.log.info('DELETE factSongPlays')
-        redshift.run("DROP TABLE IF EXISTS factSongPlays")
+
+        self.log.info(f'Create {table}')
+    
+        redshift.run(self.sql_create)
+        
         self.log.info("CREATE factSongPlays...")
-        redshift.run("""CREATE TABLE IF NOT EXISTS factSongPlays (
-songplay_id  BIGINT IDENTITY(1,1) PRIMARY KEY,
-start_time   BIGINT NOT NULL REFERENCES dimTime(start_time),
-user_key     BIGINT NOT NULL REFERENCES dimUsers(user_key),
-user_id      BIGINT,
-level        VARCHAR NOT NULL,
-song_id      VARCHAR NOT NULL REFERENCES dimSongs(song_id),
-artist_id    VARCHAR NOT NULL REFERENCES dimArtists(artist_id),
-session_id   INT NOT NULL,
-location     VARCHAR,
-user_agent   TEXT NOT NULL);""")
-        self.log.info('Insert data into factSongPlays...')
-        redshift.run(self.sql)
+        redshift.run(self.sql_create)
+
+        self.log.info(f'Insert data into {table}...')
+        redshift.run(self.sql_insert)

@@ -33,8 +33,9 @@ class SqlQueries:
 
     songplay_table_create = ("""
     CREATE TABLE IF NOT EXISTS factSongPlays (
-        songplay_id  VARCHAR,
+        songplay_id  BIGINT IDENTITY(1,1) PRIMARY KEY,
         start_time   BIGINT NOT NULL REFERENCES dimTime(start_time),
+        user_key     BIGINT NOT NULL REFERENCES dimUsers(user_key),
         user_id      BIGINT,
         level        VARCHAR NOT NULL,
         song_id      VARCHAR NOT NULL REFERENCES dimSongs(song_id),
@@ -43,8 +44,11 @@ class SqlQueries:
         location     VARCHAR,
         user_agent   TEXT NOT NULL);""")
 
-    user_table_create = ("""
+    user_table_delete =("""
     DROP TABLE IF EXISTS dimUsers;
+    """)
+
+    user_table_create = ("""
     CREATE TABLE IF NOT EXISTS dimUsers (
         user_key   BIGINT IDENTITY(1,1) PRIMARY KEY,
         user_id    BIGINT,
@@ -53,28 +57,43 @@ class SqlQueries:
         gender     VARCHAR,
         level      VARCHAR NOT NULL);""")
 
-    song_table_create = ("""CREATE TABLE IF NOT EXISTS dimSongs (
-    song_id   VARCHAR NOT NULL PRIMARY KEY,
-    title     VARCHAR,
-    artist_id VARCHAR NOT NULL REFERENCES dimArtists(artist_id),
-    year      INT NOT NULL,
-    duration  INT NOT NULL);""")
+    song_table_delete =("""
+    DROP TABLE IF EXISTS dimSongs;
+    """)
 
-    artist_table_create = ("""CREATE TABLE IF NOT EXISTS dimArtists (
-    artist_id VARCHAR NOT NULL PRIMARY KEY,
-    name      VARCHAR,
-    location  VARCHAR,
-    latitude  FLOAT,
-    longitude FLOAT);""")
+    song_table_create = ("""
+    CREATE TABLE IF NOT EXISTS dimSongs (
+        song_id   VARCHAR NOT NULL PRIMARY KEY,
+        title     VARCHAR,
+        artist_id VARCHAR NOT NULL REFERENCES dimArtists(artist_id),
+        year      INT NOT NULL,
+        duration  INT NOT NULL);""")
 
-    time_table_create = ("""CREATE TABLE IF NOT EXISTS dimTime (
-    start_time BIGINT NOT NULL PRIMARY KEY,
-    hour       INT NOT NULL,
-    day        INT NOT NULL,
-    week       INT NOT NULL,
-    month      INT NOT NULL,
-    year       INT NOT NULL,
-    weekday    INT NOT NULL);""")
+    artist_table_delete =("""
+    DROP TABLE IF EXISTS dimArtists;
+    """)
+
+    artist_table_create = ("""
+    CREATE TABLE IF NOT EXISTS dimArtists (
+        artist_id VARCHAR NOT NULL PRIMARY KEY,
+        name      VARCHAR,
+        location  VARCHAR,
+        latitude  FLOAT,
+        longitude FLOAT);""")
+
+    time_table_delete =("""
+    DROP TABLE IF EXISTS dimTime;
+    """)
+
+    time_table_create = ("""
+    CREATE TABLE IF NOT EXISTS dimTime (
+        start_time BIGINT NOT NULL PRIMARY KEY,
+        hour       INT NOT NULL,
+        day        INT NOT NULL,
+        week       INT NOT NULL,
+        month      INT NOT NULL,
+        year       INT NOT NULL,
+        weekday    INT NOT NULL);""")
 
 
 

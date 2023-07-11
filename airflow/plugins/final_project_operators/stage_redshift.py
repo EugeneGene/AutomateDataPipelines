@@ -54,7 +54,8 @@ class StageToRedshiftOperator(BaseOperator):
                  s3_bucket="",
                  s3_key="",
                  s3_location="",
-                 json_format="",               
+                 json_format="",
+                 sql_create="",               
                  *args, **kwargs):
 
         super(StageToRedshiftOperator, self).__init__(*args, **kwargs)
@@ -69,6 +70,7 @@ class StageToRedshiftOperator(BaseOperator):
         self.s3_key = s3_key
         self.s3_location = s3_location
         self.json_format = json_format
+        self.sql_create = sql_create
 
 
     def execute(self, context):
@@ -85,17 +87,10 @@ class StageToRedshiftOperator(BaseOperator):
         self.log.info("Clearing staging {} from destination Redshift table".format(self.table))
         redshift.run("DELETE FROM {}".format(self.table))
 
+        self.log.info(f"Create {self.table} staging table")
+        redshift.run(self.sql_create)
+
         self.log.info("Copying {} from S3 to Redshift".format(self.table))
-        # rendered_key = self.s3_key.format(**context)
-        # s3_path = "s3://{}/{}".format(self.s3_bucket, rendered_key)
-        # formatted_sql = S3ToRedshiftOperator.copy_sql.format(
-        #     self.table,
-        #     s3_path,
-        #     credentials.access_key,
-        #     credentials.secret_key,
-        #     self.ignore_headers,
-        #     self.delimiter
-        # )
 
 
         formatted_sql = StageToRedshiftOperator.staging_copy.format(
@@ -104,14 +99,7 @@ class StageToRedshiftOperator(BaseOperator):
             credentials.access_key, 
             credentials.secret_key, 
             self.json_format
-        )       
-
-        # formatted_sql = StageToRedshiftOperator.staging_copy.format(
-        #     self.table, 
-        #     self.s3_location, 
-        #     self.ARN, 
-        #     self.json_format
-        # )  
+        )        
 
         redshift.run(formatted_sql)
 
